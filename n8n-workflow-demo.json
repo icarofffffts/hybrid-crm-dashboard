@@ -1,0 +1,103 @@
+{
+  "name": "Hybrid CRM - Automação MVP",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "trigger-diario",
+      "name": "Varredura Diaria"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM events INNER JOIN contacts ON events.contact_id = contacts.id WHERE event_type = 'aniversario' AND EXTRACT(month from event_date) = EXTRACT(month from NOW()) AND EXTRACT(day from event_date) = EXTRACT(day from NOW());"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [200, 0],
+      "id": "fetch-aniversarios",
+      "name": "Buscar Aniversariantes",
+      "credentials": {
+        "postgres": {
+          "id": "COLOQUE_AQUI_SEU_ID",
+          "name": "Supabase Connection"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "tasks",
+        "columns": "contact_id,title,description,suggested_message,status",
+        "dataMode": "define",
+        "values": {
+          "value": [
+            {
+              "name": "contact_id",
+              "value": "={{ $json.contact_id }}"
+            },
+            {
+              "name": "title",
+              "value": "=Mandar parabéns para {{ $json.name }}"
+            },
+            {
+              "name": "description",
+              "value": "n8n Automático: Aniversário detectado."
+            },
+            {
+              "name": "suggested_message",
+              "value": "=Feliz aniversário {{ $json.name }}! Tudo de melhor!"
+            },
+            {
+              "name": "status",
+              "value": "pendente"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [400, 0],
+      "id": "criar-tasks",
+      "name": "Criar Tasks Pendentes"
+    }
+  ],
+  "connections": {
+    "Varredura Diaria": {
+      "main": [
+        [
+          {
+            "node": "Buscar Aniversariantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Aniversariantes": {
+      "main": [
+        [
+          {
+            "node": "Criar Tasks Pendentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
