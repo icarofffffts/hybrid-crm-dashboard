@@ -42,7 +42,8 @@ export async function approveTask(formData: {
       {
         contact_id: formData.contactId,
         interaction_type: 'mensagem_enviada',
-        notes: `Comunicação via ${formData.channel.toUpperCase()} processada pela Secretária n8n.`
+        notes: `Comunicação via ${formData.channel.toUpperCase()} processada pela Secretária n8n.`,
+        created_by: 'Secretária n8n'
       }
     ]);
 
