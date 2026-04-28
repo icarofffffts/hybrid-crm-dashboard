@@ -6,14 +6,16 @@ export const revalidate = 0;
 export default async function DashboardPage() {
   const { count: contactsCount } = await supabase.from('contacts').select('*', { count: 'exact', head: true });
   const { count: pendingTasks } = await supabase.from('tasks').select('*', { count: 'exact', head: true }).eq('status', 'pendente');
-  const { count: interactionsCount } = await supabase.from('interactions').select('*', { count: 'exact', head: true });
+  const { count: levelACount } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('level', 'A');
+  const { count: levelBCount } = await supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('level', 'B');
 
   const stats = [
-    { label: 'Network Total', value: contactsCount || 0, trend: '+12 na semana', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', color: 'from-blue-600/20 to-blue-900/10', border: 'border-blue-500/20', text: 'text-blue-400' },
-    { label: 'Ações n8n Pendentes', value: pendingTasks || 0, trend: 'Aguardando validação', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', color: 'from-amber-600/20 to-amber-900/10', border: 'border-amber-500/20', text: 'text-amber-400' },
-    { label: 'Interações Humanas', value: interactionsCount || 0, trend: 'Últimos 30 dias', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', color: 'from-rose-600/20 to-rose-900/10', border: 'border-rose-500/20', text: 'text-rose-400' },
-    { label: 'Saúde da Carteira', value: '98%', trend: 'Classificação Premium', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'from-emerald-600/20 to-emerald-900/10', border: 'border-emerald-500/20', text: 'text-emerald-400' },
+    { label: 'Estratégicos (A)', value: levelACount || 0, trend: 'Vagas: ' + (20 - (levelACount || 0)), icon: 'M13 10V3L4 14h7v7l9-11h-7z', color: 'from-rose-600/20 to-rose-900/10', border: 'border-rose-500/20', text: 'text-rose-400' },
+    { label: 'Relevantes (B)', value: levelBCount || 0, trend: 'Limite: 50', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z', color: 'from-amber-600/20 to-amber-900/10', border: 'border-amber-500/20', text: 'text-amber-400' },
+    { label: 'Network Total', value: contactsCount || 0, trend: 'Crescimento Contínuo', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'from-blue-600/20 to-blue-900/10', border: 'border-blue-500/20', text: 'text-blue-400' },
+    { label: 'Ações Pendentes', value: pendingTasks || 0, trend: 'Fila n8n', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', color: 'from-emerald-600/20 to-emerald-900/10', border: 'border-emerald-500/20', text: 'text-emerald-400' },
   ];
+
 
   return (
     <div className="space-y-10 animate-fade-in pb-10">
@@ -30,12 +32,25 @@ export default async function DashboardPage() {
           <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
             Gestão Híbrida de <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Alto Valor</span>
           </h1>
-          <p className="text-lg text-zinc-400 leading-relaxed font-light">
+          <p className="text-lg text-zinc-400 leading-relaxed font-light mb-8">
             O n8n opera no background vigiando sua base. A tomada de decisão final é sempre sua.
             Foque apenas no impacto e deixe a triagem com a automação.
           </p>
+
+
+          <div className="flex flex-wrap gap-4">
+            <a href="/config" className="group flex items-center gap-2 px-6 py-3 rounded-2xl bg-indigo-500 text-white font-semibold hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95">
+              <svg className="w-5 h-5 group-hover:rotate-45 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              Configurações
+            </a>
+            <a href="/users" className="group flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-semibold hover:bg-white/10 transition-all active:scale-95">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              Gestão de Time
+            </a>
+          </div>
         </div>
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, i) => (

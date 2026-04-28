@@ -1,13 +1,23 @@
 -- Seed Data Premium para Demonstração Comercial B2B/B2C - CRM Híbrido
 
-TRUNCATE TABLE tasks, interactions, events, contacts RESTART IDENTITY CASCADE;
+TRUNCATE TABLE tasks, interactions, events, contacts, categories RESTART IDENTITY CASCADE;
+
+-- 0. Categories
+INSERT INTO categories (id, name) VALUES
+('f1a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Amigo'),
+('f2a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Empresário'),
+('f3a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Investidor'),
+('f4a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Cliente'),
+('f5a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Mídia'),
+('f6a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Festa'),
+('f7a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'Político');
 
 -- 1. Contatos Estratégicos (Nível Comercial/Corporativo)
-INSERT INTO contacts (id, name, category, priority, phone, email) VALUES
-('b5e9f8bd-3c13-4e4f-8cf7-295b77e8ba8d', 'Dr. Roberto Almeida (Sócio Almeida & Advogados)', 'parceiros', 'alta', '+55 11 99999-0001', 'roberto@almeidalaw.com.br'),
-('c7a8b9d0-2f3b-4c12-9e8a-7d4f9b8c0a1b', 'Mariana Lancaster (CEO TechSolutions)', 'clientes', 'alta', '+55 11 99999-0002', 'm.lancaster@techsolutions.com'),
-('d8e9f0a1-4b2c-4d3e-8f9a-1c2b3d4e5f6a', 'Henrique Souza (Diretor Comercial Alpha Imóveis)', 'clientes', 'media', '+55 11 99999-0003', 'henrique@alpha.com'),
-('e9f0a1b2-5c3d-4e4f-9a0b-2d3e4f5a6b7c', 'Juliana Fernandes (Arquiteta Partners)', 'conhecidos', 'baixa', '+55 11 99999-0004', 'juliana@jf-arquitetura.com');
+INSERT INTO contacts (id, name, category_id, level, phone, email, company, job_title) VALUES
+('b5e9f8bd-3c13-4e4f-8cf7-295b77e8ba8d', 'Dr. Roberto Almeida', 'f2a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'A', '+55 11 99999-0001', 'roberto@almeidalaw.com.br', 'Almeida & Advogados', 'Sócio'),
+('c7a8b9d0-2f3b-4c12-9e8a-7d4f9b8c0a1b', 'Mariana Lancaster', 'f4a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'A', '+55 11 99999-0002', 'm.lancaster@techsolutions.com', 'TechSolutions', 'CEO'),
+('d8e9f0a1-4b2c-4d3e-8f9a-1c2b3d4e5f6a', 'Henrique Souza', 'f4a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'B', '+55 11 99999-0003', 'henrique@alpha.com', 'Alpha Imóveis', 'Diretor Comercial'),
+('e9f0a1b2-5c3d-4e4f-9a0b-2d3e4f5a6b7c', 'Juliana Fernandes', 'f1a2b3c4-d5e6-4f7b-8b9a-0a1b2c3d4e5f', 'C', '+55 11 99999-0004', 'juliana@jf-arquitetura.com', 'Partners', 'Arquiteta');
 
 -- 2. Eventos Ancorados (Para disparar automações de parabenização)
 INSERT INTO events (contact_id, event_type, event_date, description) VALUES

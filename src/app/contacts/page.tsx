@@ -4,12 +4,16 @@ import { supabase } from '@/lib/supabase';
 export const revalidate = 0;
 
 export default async function ContactsPage() {
-  const { data: contacts } = await supabase.from('contacts').select('*').order('priority', { ascending: true }); 
+  const { data: contacts } = await supabase
+    .from('contacts')
+    .select('*, categories(name)')
+    .order('level', { ascending: true }); 
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'alta': return 'text-rose-400 bg-rose-500/10 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.15)] ring-1 ring-inset ring-rose-500/20';
-      case 'media': return 'text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)] ring-1 ring-inset ring-amber-500/20';
+  const getLevelColor = (level: string) => {
+    switch (level) {
+      case 'A': return 'text-rose-400 bg-rose-500/10 border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.15)] ring-1 ring-inset ring-rose-500/20';
+      case 'B': return 'text-amber-400 bg-amber-500/10 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)] ring-1 ring-inset ring-amber-500/20';
+      case 'C': return 'text-blue-400 bg-blue-500/10 border-blue-500/30 ring-1 ring-inset ring-blue-500/20';
       default: return 'text-zinc-400 bg-white/5 border-white/10 ring-1 ring-inset ring-white/5';
     }
   };
@@ -42,8 +46,9 @@ export default async function ContactsPage() {
           </div>
           <select className="bg-black/50 border border-white/10 rounded-xl px-5 py-3.5 text-sm font-medium text-zinc-300 focus:outline-none min-w-[180px] appearance-none cursor-pointer shadow-inner hover:bg-white/5 transition-colors">
             <option>Visão Global</option>
-            <option>Somente Clientes VIP</option>
-            <option>Board / Sócios</option>
+            <option>Nível A - Estratégicos</option>
+            <option>Nível B - Relevantes</option>
+            <option>Nível C/D - Geral</option>
           </select>
         </div>
         
@@ -53,14 +58,15 @@ export default async function ContactsPage() {
               <tr>
                 <th className="px-8 py-5">Perfil Executivo</th>
                 <th className="px-8 py-5">Categoria</th>
-                <th className="px-8 py-5 text-center">Classificação</th>
-                <th className="px-8 py-5">Contato Privado</th>
+                <th className="px-8 py-5 text-center">Nível</th>
+                <th className="px-8 py-5">Empresa / Cargo</th>
+                <th className="px-8 py-5">Contato</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {contacts?.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-8 py-16 text-center text-zinc-500 font-light text-lg">Sem registros de contato nesta base.</td>
+                  <td colSpan={5} className="px-8 py-16 text-center text-zinc-500 font-light text-lg">Sem registros de contato nesta base.</td>
                 </tr>
               )}
               {contacts?.map((contact: any) => (
@@ -68,26 +74,33 @@ export default async function ContactsPage() {
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg shadow-inner transition-colors border
-                        ${contact.priority === 'alta' ? 'bg-gradient-to-br from-rose-500/20 to-rose-900/40 text-rose-300 border-rose-500/30' : 
-                          contact.priority === 'media' ? 'bg-gradient-to-br from-amber-500/20 to-amber-900/40 text-amber-300 border-amber-500/30' : 
+                        ${contact.level === 'A' ? 'bg-gradient-to-br from-rose-500/20 to-rose-900/40 text-rose-300 border-rose-500/30' : 
+                          contact.level === 'B' ? 'bg-gradient-to-br from-amber-500/20 to-amber-900/40 text-amber-300 border-amber-500/30' : 
                           'bg-gradient-to-br from-zinc-800 to-black text-zinc-400 border-white/10 group-hover:bg-zinc-800'}`}>
                         {contact.name.charAt(0)}
                       </div>
                       <div>
                         <p className="font-bold text-white group-hover:text-indigo-300 transition-colors text-base tracking-tight">{contact.name}</p>
+                        <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">{contact.city || 'Cidade não inf.'}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className="text-zinc-400 capitalize bg-white/5 px-3 py-1 rounded-md text-xs border border-white/5">{contact.category}</span>
-                  </td>
-                  <td className="px-8 py-5 text-center">
-                    <span className={`px-4 py-1.5 font-bold uppercase text-[10px] tracking-widest inline-block min-w-[90px] text-center rounded-lg ${getPriorityColor(contact.priority)}`}>
-                      {contact.priority}
+                    <span className="text-zinc-400 capitalize bg-white/5 px-3 py-1 rounded-md text-xs border border-white/5">
+                      {contact.categories?.name || 'Sem Categoria'}
                     </span>
                   </td>
+                  <td className="px-8 py-5 text-center">
+                    <span className={`px-4 py-1.5 font-bold uppercase text-[10px] tracking-widest inline-block min-w-[40px] text-center rounded-lg ${getLevelColor(contact.level)}`}>
+                      {contact.level}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5">
+                    <p className="text-white font-medium text-xs">{contact.company || '—'}</p>
+                    <p className="text-[10px] text-zinc-500">{contact.job_title || '—'}</p>
+                  </td>
                   <td className="px-8 py-5 font-mono text-xs text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                    {contact.email || contact.phone || '—'}
+                    {contact.phone || contact.email || '—'}
                   </td>
                 </tr>
               ))}
