@@ -55,40 +55,42 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "4/5. Preparando e extraindo novo build no VPS (Método Swap)..." -ForegroundColor Yellow
+Write-Host "4/5. Preparando e extraindo novo build no VPS (Método Swap Agressivo)..." -ForegroundColor Yellow
 $RemoteCmd = @"
 cd ${VpsPath}
-# Garante que o processo não esteja travando arquivos
+# Para o processo e limpa logs para garantir que não haja cache em memória
 pm2 stop ${Pm2Name} 2>/dev/null || true
+pm2 flush ${Pm2Name} 2>/dev/null || true
 
-# Limpeza e Backup de segurança
+# Limpeza total de build anterior e backups temporários
 rm -rf .next_old public_old
 [ -d .next ] && mv .next .next_old
 [ -d public ] && mv public public_old
 rm -f package.json package-lock.json next.config.*
 
-# Extração limpa
+# Extração limpa do novo pacote
 tar -xzf deploy_bundle.tar.gz
 rm deploy_bundle.tar.gz
 
-# Backup permanente
+# Garante permissões (opcional mas recomendado)
+# chmod -R 755 .next public
+
+# Backup permanente do build anterior
 mkdir -p backups
 cp -r .next_old backups/build-${Timestamp} 2>/dev/null || true
 "@
 
 ssh -i $SshKey ${VpsUser}@${VpsIp} $RemoteCmd
-Write-Host "Arquivos extraídos no VPS." -ForegroundColor Green
+Write-Host "Arquivos extraídos e limpos no VPS." -ForegroundColor Green
 
-# 4. Reiniciar via PM2
-Write-Host "5/5. Reiniciando processo PM2: $Pm2Name..." -ForegroundColor Yellow
-# Usamos start/restart explícito para garantir que pegue o novo package.json e dependências se necessário
-# IMPORTANTE: Alterado para porta 3004 para bater com o Nginx no VPS
-ssh -i $SshKey ${VpsUser}@${VpsIp} "cd ${VpsPath} && (pm2 restart $Pm2Name || pm2 start npm --name '$Pm2Name' -- start -- -p 3004)"
-
-
+# 4. Reiniciar via PM2 com Force
+Write-Host "5/5. Reiniciando processo PM2 com Force: $Pm2Name..." -ForegroundColor Yellow
+# Usamos start/restart com --update-env e garantindo a porta 3004
+$Pm2Cmd = "cd ${VpsPath} && (pm2 delete $Pm2Name 2>/dev/null || true) && pm2 start npm --name '$Pm2Name' --update-env -- start -- -p 3004"
+ssh -i $SshKey ${VpsUser}@${VpsIp} $Pm2Cmd
 
 # 5. Limpeza Local
 Remove-Item deploy_bundle.tar.gz -ErrorAction SilentlyContinue
 
-Write-Host "--- Deploy Concluído com Sucesso! 🚀 ---" -ForegroundColor Cyan
-
+Write-Host "--- Deploy Concluído com Sucesso Forçado! 🚀 ---" -ForegroundColor Cyan
+Write-Host "DICA: Se não vir as mudanças, tente Ctrl+F5 ou use uma aba anônima." -ForegroundColor Magenta

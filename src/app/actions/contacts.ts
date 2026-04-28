@@ -94,3 +94,17 @@ export async function deleteContact(id: string) {
     return { success: false, error: error.message };
   }
 }
+export async function bulkCreateContacts(contacts: any[]) {
+  try {
+    const { data, error } = await supabase
+      .from('contacts')
+      .insert(contacts)
+      .select();
+
+    if (error) throw error;
+    return { success: true, count: data.length };
+  } catch (error: any) {
+    console.error('Error in bulk import:', error);
+    return { success: false, error: error.message };
+  }
+}

@@ -56,3 +56,17 @@ export async function approveTask(formData: {
     return { success: false, error: error.message };
   }
 }
+export async function cancelTask(taskId: string) {
+  try {
+    const { error } = await supabase
+      .from('tasks')
+      .update({ status: 'cancelada', resolved_at: new Date().toISOString() })
+      .eq('id', taskId);
+
+    if (error) throw error;
+    revalidatePath('/secretary');
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

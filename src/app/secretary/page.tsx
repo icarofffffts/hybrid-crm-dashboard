@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { approveTask } from '@/app/actions/tasks';
+import { approveTask, cancelTask } from '@/app/actions/tasks';
 
 type Task = {
   id: string;
@@ -52,6 +52,17 @@ export default function SecretaryInboxPage() {
       setTasks(prev => prev.filter(t => t.id !== task.id));
     } else {
       alert('Erro ao processar: ' + result.error);
+    }
+    setProcessingId(null);
+  };
+  const handleCancel = async (taskId: string) => {
+    if (!confirm('Deseja ignorar esta sugestão?')) return;
+    setProcessingId(taskId);
+    const result = await cancelTask(taskId);
+    if (result.success) {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+    } else {
+      alert('Erro ao cancelar: ' + result.error);
     }
     setProcessingId(null);
   };
@@ -148,7 +159,11 @@ export default function SecretaryInboxPage() {
                 </div>
                 
                 <div className="flex items-center gap-4 mt-6 justify-end">
-                  <button className="px-6 py-3.5 text-sm uppercase tracking-widest font-bold text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors">
+                  <button 
+                    disabled={processingId === task.id}
+                    onClick={() => handleCancel(task.id)}
+                    className="px-6 py-3.5 text-sm uppercase tracking-widest font-bold text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors disabled:opacity-50"
+                  >
                     Ignorar
                   </button>
                   <button 
